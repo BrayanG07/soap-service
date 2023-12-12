@@ -3,20 +3,20 @@ require_once "vendor/econea/nusoap/src/nusoap.php";
 require_once "config/connection.php";
 require_once "models/User.php";
 
-// Configuración del servicio SOAP
 $server = new nusoap_server();
-$namespace = 'UserListServiceSOAP'; // Cambia esto a tu propio namespace
+$namespace = 'UserListServiceSOAP';
 
 // Define el servicio web y el método
 $server->configureWSDL('UserListService', $namespace);
-$server->register('getUserInfo', // Nombre del método
+$server->register(
+    'getUserInfo', // Nombre del método
     array(), // Parámetros de entrada
     array('return' => 'tns:ArrayOfUserInfo'), // Parámetros de salida
-    $namespace, // Namespace
+    $namespace,
     false, // SOAPAction
     'rpc', // Estilo
     'encoded', // Uso
-    'Returns user information as an associative array.' // Descripción
+    'Returns user information from user.'
 );
 
 // Definición del tipo de dato ArrayOfUserInfo
@@ -51,13 +51,26 @@ $server->wsdl->addComplexType(
     )
 );
 
-function getUserInfo() {
-  $user = new User();
-  return $user->getAllUsers();
+function getUserInfo()
+{
+    try {
+        $user = new User();
+        return $user->getAllUsers();
+    } catch (Exception $e) {
+        return handlerErrorCatch($e);
+    }
+}
+
+function handlerErrorCatch(Exception $e)
+{
+    if ($e->getCode() == 400) {
+        header('HTTP/1.1 400 Bad Request', true, 400);
+        return array("answer" => false, "error" => $e->getMessage());
+    }
+
+    header('HTTP/1.1 500 Internal Server Error', true, 500);
+    return array("answer" => false, "error" => $e->getMessage());
 }
 
 // Procesa la solicitud del cliente
-$rawPostData = file_get_contents('php://input');
-$server->service($rawPostData);
-
-?>
+$server->service(file_get_contents('php://input'));

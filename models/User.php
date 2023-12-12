@@ -57,7 +57,7 @@ class User extends Connection
     $result = $query->fetch(PDO::FETCH_ASSOC);
 
     if ($result['quantity'] > 0) {
-      throw new Exception('El email '.$email.' ya está registrado en la base de datos', 400);
+      throw new Exception('El email '.$email.' ya esta registrado en la base de datos', 400);
     }
   }
 

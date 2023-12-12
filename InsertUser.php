@@ -100,6 +100,4 @@ function handlerErrorCatch(Exception $e)
   return array("answer" => false, "error" => $e->getMessage());
 }
 
-$POST_DATA = file_get_contents("php://input");
-$server->service($POST_DATA);
-exit();
+$server->service(file_get_contents("php://input"));
